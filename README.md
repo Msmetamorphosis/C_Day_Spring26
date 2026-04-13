@@ -92,7 +92,7 @@ C_Day_Spring26/
 
 I'm an MSAI candidate at Kennesaw State University and the founder of **Metamorphic Curations**, an AI transformation consultancy. My research sits at the intersection of LLM behavior, AI fairness, and governance — the parts of the field where the metric doesn't match reality, and where the fix has to be structural.
 
-→ [metamorphiccurations.com](https://www.metamorphiccurations.com) · [github.com/Msmetamorphosis](https://github.com/Msmetamorphosis)
+→ [metamorphiccurations.com](https://www.metamorphiccurations.com) · [github.com/Msmetamorphosis](https://github.com/Msmetamorphosis) · [CHRYSALISAI.io](https://chrysalisai.io)  · [NextMission Navigator](https://www.VetNavi.ai)
 
 ---
 
