@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Architectural Stabilization of LLMs | C Day Research Showcase</title>
+    <meta
+      name="description"
+      content="Research showcase website for architectural stabilization of LLMs, linked experimental dashboards, and related research including CIPHER, PRISM, SAF, and Chrysalis."
+    />
+    <style>
+      :root {
+        --sage: #9caf88;
+        --cream: #fff8ee;
+        --terracotta: #c9785f;
+        --deep-blue: #17304a;
+        --burnt-orange: #b85c38;
+        --text: #17304a;
+        --muted: #5f6f66;
+        --border: rgba(23, 48, 74, 0.12);
+        --shadow: 0 18px 48px rgba(23, 48, 74, 0.14);
+        --radius: 22px;
+        --max-width: 1180px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, Arial, Helvetica, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(156, 175, 136, 0.24), transparent 30%),
+          radial-gradient(circle at 86% 14%, rgba(201, 120, 95, 0.18), transparent 24%),
+          radial-gradient(circle at 50% 100%, rgba(184, 92, 56, 0.14), transparent 28%),
+          linear-gradient(180deg, #f8f0e4 0%, #f6ebde 45%, #f1e3d4 100%);
+        line-height: 1.65;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        width: min(calc(100% - 2rem), var(--max-width));
+        margin: 0 auto;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(255, 248, 238, 0.9);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-wrap {
+        min-height: 74px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand strong {
+        font-size: 1rem;
+        letter-spacing: 0.02em;
+      }
+
+      .brand span {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .nav a {
+        color: var(--deep-blue);
+        opacity: 0.8;
+        font-size: 0.95rem;
+      }
+
+      .nav a:hover {
+        color: var(--burnt-orange);
+        opacity: 1;
+      }
+
+      .hero {
+        padding: 5.5rem 0 3rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 2rem;
+        align-items: stretch;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(156, 175, 136, 0.18);
+        border: 1px solid rgba(156, 175, 136, 0.35);
+        color: var(--deep-blue);
+        font-size: 0.9rem;
+        margin-bottom: 1.25rem;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.15;
+        margin: 0 0 1rem;
+      }
+
+      h1 {
+        font-size: clamp(2.3rem, 6vw, 4.4rem);
+        max-width: 12ch;
+      }
+
+      h2 {
+        font-size: clamp(1.6rem, 3vw, 2.5rem);
+      }
+
+      p {
+        margin: 0 0 1rem;
+      }
+
+      .hero p {
+        font-size: 1.05rem;
+        color: rgba(23, 48, 74, 0.82);
+        max-width: 62ch;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-top: 1.6rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.88rem 1.2rem;
+        font-weight: 700;
+        border: 1px solid transparent;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-primary {
+        background: var(--deep-blue);
+        color: var(--cream);
+        box-shadow: var(--shadow);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 248, 238, 0.7);
+        border-color: rgba(23, 48, 74, 0.14);
+        color: var(--deep-blue);
+      }
+
+      .hero-card,
+      .card {
+        background: rgba(255, 248, 238, 0.9);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-card {
+        padding: 1.4rem;
+        display: grid;
+        gap: 1rem;
+      }
+
+      .hero-stat {
+        padding: 1rem;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(156, 175, 136, 0.18), rgba(255, 248, 238, 0.75));
+        border: 1px solid rgba(156, 175, 136, 0.24);
+      }
+
+      .hero-stat strong {
+        display: block;
+        font-size: 1.8rem;
+        color: var(--burnt-orange);
+        margin-bottom: 0.3rem;
+      }
+
+      .section {
+        padding: 1.4rem 0 3.6rem;
+      }
+
+      .section-head {
+        max-width: 72ch;
+        margin-bottom: 1.6rem;
+      }
+
+      .grid-3,
+      .grid-2 {
+        display: grid;
+        gap: 1.25rem;
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card {
+        padding: 1.4rem;
+      }
+
+      .card h3 {
+        font-size: 1.15rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .tag {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--terracotta);
+        margin-bottom: 0.8rem;
+      }
+
+      .link-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 220px;
+      }
+
+      .link-card a.inline-link,
+      .bio a.inline-link,
+      .research-links a.inline-link {
+        color: var(--burnt-orange);
+        font-weight: 700;
+      }
+
+      .link-card a.inline-link:hover,
+      .bio a.inline-link:hover,
+      .research-links a.inline-link:hover {
+        color: var(--deep-blue);
+      }
+
+      .bio-layout {
+        display: grid;
+        grid-template-columns: 0.85fr 1.15fr;
+        gap: 1.25rem;
+      }
+
+      .bio-highlight {
+        background: linear-gradient(180deg, rgba(23, 48, 74, 0.96), rgba(37, 67, 97, 0.96));
+        color: var(--cream);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+      }
+
+      .bio-highlight p,
+      .bio-highlight li {
+        color: rgba(255, 248, 238, 0.88);
+      }
+
+      ul {
+        padding-left: 1.2rem;
+        margin: 0.65rem 0 0;
+      }
+
+      .footer {
+        padding: 1.5rem 0 3rem;
+        color: rgba(23, 48, 74, 0.72);
+      }
+
+      .footer-inner {
+        border-top: 1px solid var(--border);
+        padding-top: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 900px) {
+        .hero-grid,
+        .grid-3,
+        .grid-2,
+        .bio-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .nav-wrap {
+          padding: 0.8rem 0;
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .hero {
+          padding-top: 4.5rem;
+        }
+
+        .hero-actions {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <div class="brand">
+          <strong>Crystal Tubbs Research</strong>
+          <span>C Day poster companion site</span>
+        </div>
+        <nav class="nav">
+          <a href="#overview">Overview</a>
+          <a href="#experiment">Experiment</a>
+          <a href="#dashboards">Dashboards</a>
+          <a href="#research">Other Research</a>
+          <a href="#bio">Bio</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div>
+            <div class="eyebrow">Architectural Stabilization of LLMs</div>
+            <h1>Designing for reliability, consistency, and interpretable behavior in large language models.</h1>
+            <p>
+              This site serves as a companion to my C Day poster and research presentation. It introduces the
+              architectural stabilization of LLMs project, summarizes the experiment design, and provides direct access
+              to the supporting CRAFT and reliability pipeline dashboards used to explore outcomes, trends, and model
+              behavior.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#dashboards">View dashboard links</a>
+              <a class="btn btn-secondary" href="#bio">About the researcher</a>
+            </div>
+          </div>
+
+          <aside class="hero-card">
+            <div class="hero-stat">
+              <strong>Goal</strong>
+              <span>Improve LLM dependability through architectural and experimental stabilization methods.</span>
+            </div>
+            <div class="hero-stat">
+              <strong>Focus</strong>
+              <span>Reliability, repeatability, response structure, and resilient system level behavior.</span>
+            </div>
+            <div class="hero-stat">
+              <strong>Connected Work</strong>
+              <span>CRAFT, reliability pipeline evaluation, Chrysalis, CIPHER, PRISM, and SAF.</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="overview">
+        <div class="container">
+          <div class="section-head">
+            <div class="tag">Research overview</div>
+            <h2>What is architectural stabilization in LLM research?</h2>
+            <p>
+              Architectural stabilization explores how model structure, inference workflow, prompt scaffolding,
+              validation layers, and system design choices can reduce volatility in outputs and improve reliability.
+              Rather than treating failure as a single model issue, this research examines how stability can be created
+              across the full interaction stack.
+            </p>
+          </div>
+
+          <div class="grid-3">
+            <article class="card">
+              <h3>Problem space</h3>
+              <p>
+                LLM behavior can vary across similar prompts, contexts, and task conditions. This creates challenges in
+                reproducibility, confidence, and downstream usability, especially in research or mission oriented
+                settings.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Research lens</h3>
+              <p>
+                The project investigates stabilization as a systems problem. It considers architecture, orchestration,
+                structured outputs, feedback loops, and evaluation strategy as interdependent components.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Expected value</h3>
+              <p>
+                A more stable LLM pipeline can support higher trust, stronger consistency, and clearer interpretation of
+                experimental outcomes across multiple applications and environments.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="experiment">
+        <div class="container">
+          <div class="section-head">
+            <div class="tag">Experiment and design</div>
+            <h2>Experiment structure and evaluation logic</h2>
+            <p>
+              The experiment examines whether stabilization oriented design choices can improve output reliability under
+              changing conditions. This includes structured comparison of task framing, architectural constraints,
+              evaluation pathways, and consistency checks across repeated interactions.
+            </p>
+          </div>
+
+          <div class="grid-2">
+            <article class="card">
+              <h3>Core experimental questions</h3>
+              <ul>
+                <li>How do architectural supports affect response consistency across repeated trials?</li>
+                <li>Which design layers appear most influential in reducing instability?</li>
+                <li>How do structured evaluation methods surface hidden variance or emergent failure patterns?</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Observed dimensions</h3>
+              <ul>
+                <li>Reliability across similar prompts and tasks</li>
+                <li>Structural consistency of outputs</li>
+                <li>Robustness under context shifts</li>
+                <li>Interpretability of behavioral changes across trials</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="dashboards">
+        <div class="container">
+          <div class="section-head">
+            <div class="tag">Interactive exploration</div>
+            <h2>Experimental dashboards and linked research tools</h2>
+            <p>
+              These pages allow viewers to move from the poster summary into the underlying evaluation environment and
+              dashboard views. Replace the placeholder links below with your live GitHub Pages or project URLs.
+            </p>
+          </div>
+
+          <div class="grid-2">
+            <article class="card link-card">
+              <div>
+                <h3>Reliability Pipeline</h3>
+                <p>
+                  Explore pipeline level reliability evaluation, experimental flow, and supporting metrics used to assess
+                  system stability.
+                </p>
+              </div>
+              <p><a class="inline-link" href="https://your-reliability-pipeline-link-here.com" target="_blank" rel="noreferrer">Open the Reliability Pipeline page</a></p>
+            </article>
+
+            <article class="card link-card">
+              <div>
+                <h3>CRAFT Dashboard</h3>
+                <p>
+                  Access the CRAFT experimental dashboards to review comparative results, visual patterns, and related
+                  research insights.
+                </p>
+              </div>
+              <p><a class="inline-link" href="https://your-craft-link-here.com" target="_blank" rel="noreferrer">Open the CRAFT page</a></p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="research">
+        <div class="container">
+          <div class="section-head">
+            <div class="tag">Research ecosystem</div>
+            <h2>Related research and connected initiatives</h2>
+            <p>
+              This work sits within a broader research portfolio centered on trustworthy systems, interpretability,
+              structured evaluation, and mission aligned AI design.
+            </p>
+          </div>
+
+          <div class="grid-3 research-links">
+            <article class="card">
+              <h3>CIPHER</h3>
+              <p>
+                Research connected to interpretable reasoning, pattern analysis, and structured approaches to exploring
+                intelligence behavior in complex systems.
+              </p>
+            </article>
+            <article class="card">
+              <h3>PRISM</h3>
+              <p>
+                Related work focused on analysis, visibility, and multi angle evaluation of model or system performance
+                across shifting contexts.
+              </p>
+            </article>
+            <article class="card">
+              <h3>SAF</h3>
+              <p>
+                Research supporting safer, more dependable AI workflows through stronger evaluation, oversight, and
+                design alignment.
+              </p>
+            </article>
+          </div>
+
+          <div class="card" style="margin-top: 1.25rem;">
+            <h3>Chrysalis</h3>
+            <p>
+              Chrysalis represents a connected research and innovation thread within this broader body of work. It
+              reflects transformation, emergence, and structured evolution across intelligent systems research.
+            </p>
+            <p>
+              <a class="inline-link" href="https://your-chrysalis-site-link-here.com" target="_blank" rel="noreferrer">Visit the Chrysalis site</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="bio">
+        <div class="container bio-layout">
+          <div class="bio-highlight">
+            <div class="tag" style="color: #ffd9cc;">Researcher bio</div>
+            <h2 style="color: var(--cream);">Crystal Tubbs</h2>
+            <p>
+              Crystal Tubbs is a researcher, builder, and systems thinker whose work centers on reliable AI,
+              experimental design, interpretability, and applied innovation. Her research connects technical inquiry
+              with practical, human centered system design.
+            </p>
+            <ul>
+              <li>Focus areas include LLM reliability, stabilization, evaluation design, and emerging intelligent systems.</li>
+              <li>Research spans architectural behavior, structured experimentation, and trustworthy AI workflows.</li>
+              <li>Connected initiatives include CIPHER, PRISM, SAF, Chrysalis, and dashboard driven evaluation environments.</li>
+            </ul>
+          </div>
+
+          <article class="card bio">
+            <div class="tag">About me</div>
+            <h2>Research grounded in structure, transformation, and dependable intelligence</h2>
+            <p>
+              My work explores how advanced AI systems can become more reliable, interpretable, and practically useful.
+              Through experiments, frameworks, and linked research initiatives, I investigate how architecture,
+              evaluation, and design choices shape system behavior.
+            </p>
+            <p>
+              In addition to the architectural stabilization of LLMs project, my research portfolio includes CIPHER,
+              PRISM, and SAF, as well as the broader Chrysalis initiative. Together, these efforts reflect a strong
+              interest in structured intelligence, resilient systems, and meaningful transformation in AI research.
+            </p>
+            <p>
+              <a class="inline-link" href="https://your-chrysalis-site-link-here.com" target="_blank" rel="noreferrer">Explore Chrysalis</a>
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span>© 2026 Crystal Tubbs. C Day research showcase.</span>
+        <span>Built for GitHub Pages deployment.</span>
+      </div>
+    </footer>
+  </body>
+</html>
