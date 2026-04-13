@@ -1,4 +1,4 @@
-# Architectural Stabilization of LLM Output Under Behavioral Prompt Variation
+# Architectural Stabilization of LLM Outputs Under Behavioral Prompt Variation
 
 ### KSU C-Day · Spring 2026 · Masters Research
 **Crystal Tubbs** · MSAI, Kennesaw State University · Big Data Analytics · Advisor: Dr. Martin Brown
